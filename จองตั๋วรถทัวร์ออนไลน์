@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard จำลองการจองและชำระเงินตั๋วรถทัวร์</title>
+    <!-- Google Font: Prompt -->
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- html2pdf.js สำหรับแปลงเอกสารเป็นไฟล์ PDF ขนาด A4 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Prompt', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #f1f5f9;
+            color: #1e293b;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .dashboard-container {
+            display: flex;
+            width: 100%;
+            max-width: 1200px;
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        /* ฝั่งฟอร์มกรอกข้อมูล */
+        .form-section {
+            flex: 1.1;
+            padding: 35px;
+            background: #ffffff;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .form-section h2 {
+            color: #0f172a;
+            margin-bottom: 20px;
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
+        }
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        .form-group {
+            margin-bottom: 16px;
+            flex: 1;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #475569;
+            font-size: 14px;
+        }
+        input, select {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+            transition: all 0.3s;
+            background-color: #fff;
+        }
+        input:focus, select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+        .btn-book {
+            width: 100%;
+            background-color: #2563eb;
+            color: white;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        .btn-book:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* ฝั่งแสดงผลตั๋ว / ใบแจ้งชำระเงิน A4 */
+        .preview-section {
+            flex: 1.2;
+            background: #f8fafc;
+            padding: 35px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-left: 1px solid #e2e8f0;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+        .placeholder-text {
+            color: #94a3b8;
+            text-align: center;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* ดีไซน์กระดาษตั๋ว A4 */
+        #ticketA4 {
+            display: none;
+            width: 100%;
+            max-width: 550px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 2px solid #0f172a;
+            padding: 30px;
+        }
+        .a4-header {
+            text-align: center;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .a4-header h2 {
+            color: #0f172a;
+            font-size: 22px;
+            letter-spacing: 1px;
+            margin-bottom: 4px;
+        }
+        .a4-header p {
+            font-size: 13px;
+            color: #64748b;
+        }
+        .a4-section-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 10px;
+            border-left: 4px solid #2563eb;
+            padding-left: 8px;
+        }
+        .a4-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+            font-size: 14px;
+        }
+        .a4-item span {
+            color: #64748b;
+            display: block;
+            font-size: 12px;
+        }
+        .a4-item strong {
+            color: #1e293b;
+            font-size: 15px;
+        }
+        .a4-footer {
+            border-top: 1px dashed #cbd5e1;
+            padding-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 16px;
+        }
+        .a4-footer .price {
+            color: #059669;
+            font-weight: 700;
+            font-size: 20px;
+        }
+
+        /* ดีไซน์ใบแจ้งชำระเงิน เคาน์เตอร์เซอร์วิส (A4) */
+        #paymentA4 {
+            display: none;
+            width: 100%;
+            max-width: 550px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            border: 2px solid #ea580c;
+            padding: 30px;
+        }
+        .pay-header {
+            text-align: center;
+            border-bottom: 2px solid #fed7aa;
+            padding-bottom: 15px;
+            margin-bottom: 20px;
+        }
+        .pay-header h2 {
+            color: #ea580c;
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        .pay-header p {
+            font-size: 12px;
+            color: #64748b;
+        }
+        .pay-box {
+            background: #fff7ed;
+            border: 1px solid #ffedd5;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .pay-box span {
+            font-size: 14px;
+            color: #9a3412;
+            display: block;
+            margin-bottom: 5px;
+        }
+        .pay-box strong {
+            font-size: 28px;
+            color: #c2410c;
+        }
+        .barcode-section {
+            text-align: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px dashed #cbd5e1;
+        }
+        .barcode-lines {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 36px;
+            letter-spacing: 4px;
+            font-weight: bold;
+            color: #0f172a;
+            margin-bottom: 5px;
+        }
+        .barcode-number {
+            font-size: 13px;
+            color: #64748b;
+            letter-spacing: 2px;
+        }
+
+        /* ปุ่มจัดการตั๋วและชำระเงิน */
+        .ticket-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 550px;
+        }
+        .btn-action {
+            flex: 1;
+            padding: 11px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: white;
+            transition: opacity 0.2s;
+        }
+        .btn-action:hover { opacity: 0.9; }
+        .btn-pdf { background-color: #dc2626; }
+        .btn-email { background-color: #7c3aed; }
+        .btn-pay { background-color: #ea580c; width: 100%; margin-top: 15px; padding: 12px; font-size: 15px; border-radius: 6px; border: none; color: white; font-weight: 600; cursor: pointer; }
+        .btn-pay:hover { background-color: #c2410c; }
+
+        @media (max-width: 768px) {
+            .dashboard-container {
+                flex-direction: column;
+            }
+            .preview-section {
+                border-left: none;
+                border-top: 1px solid #e2e8f0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="dashboard-container">
+    <!-- ฟอร์มกรอกข้อมูล (ฝั่งซ้าย) -->
+    <div class="form-section">
+        <h2>🚌 จองตั๋วรถทัวร์ & ชำระเงิน</h2>
+        <form id="bookingForm">
+            <div class="form-group">
+                <label>อีเมลผู้จอง (สำหรับรับไฟล์ PDF)</label>
+                <input type="email" id="email" placeholder="example@email.com" required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>1. ชื่อ - นามสกุล</label>
+                    <input type="text" id="fullname" placeholder="กรอกชื่อและนามสกุล" required>
+                </div>
+                <div class="form-group">
+                    <label>2. เบอร์โทรศัพท์</label>
+                    <input type="tel" id="phone" placeholder="0812345678" pattern="[0-9]{10}" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>5. สถานีต้นทาง</label>
+                    <select id="origin" required>
+                        <option value="">-- เลือกจังหวัดต้นทาง --</option>
+                        <option value="พิษณุโลก" style="font-weight:bold; color:#2563eb;">📍 พิษณุโลก (แนะนำ)</option>
+                        <option disabled>-----------------------------</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>5. สถานีปลายทาง</label>
+                    <select id="destination" required>
+                        <option value="">-- เลือกจังหวัดปลายทาง --</option>
+                        <option value="ระยอง" style="font-weight:bold; color:#2563eb;">📍 ระยอง (แนะนำ)</option>
+                        <option disabled>-----------------------------</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>6. วันที่เดินทาง</label>
+                    <input type="date" id="travelDate" required>
+                </div>
+                <div class="form-group">
+                    <label>6. เวลาเดินทาง</label>
+                    <select id="travelTime" required>
+                        <option value="">-- เลือกเวลาเดินทาง --</option>
+                        <option value="06:00 น.">06:00 น.</option>
+                        <option value="09:30 น.">09:30 น.</option>
+                        <option value="13:00 น.">13:00 น.</option>
+                        <option value="18:30 น.">18:30 น.</option>
+                        <option value="21:00 น.">21:00 น.</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label>3. เลขที่นั่งตั๋ว</label>
+                    <input type="text" id="seatNumber" placeholder="เช่น A1, B12" required>
+                </div>
+                <div class="form-group">
+                    <label>4. ราคาตั๋ว (บาท)</label>
+                    <input type="number" id="price" placeholder="เช่น 650" min="0" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-book">ยืนยันการจองตั๋ว</button>
+        </form>
+    </div>
+
+    <!-- ส่วนแสดงผลตั๋วและใบชำระเงิน (ฝั่งขวา) -->
+    <div class="preview-section">
+        <div id="placeholderText" class="placeholder-text">
+            📋 กรอกข้อมูลทางด้านซ้ายให้ครบถ้วน<br>แล้วกด <b>"ยืนยันการจองตั๋ว"</b><br>เพื่อแสดงใบตั๋วโดยสารขนาด A4
+        </div>
+
+        <!-- 1. หน้าตั๋วโดยสาร A4 -->
+        <div id="ticketA4">
+            <div class="a4-header">
+                <h2>OFFICIAL BUS E-TICKET</h2>
+                <p>ใบยืนยันการจองตั๋วโดยสารรถทัวร์ออนไลน์</p>
+            </div>
+
+            <div class="a4-section-title">ข้อมูลผู้โดยสาร</div>
+            <div class="a4-grid">
+                <div class="a4-item">
+                    <span>ชื่อ - นามสกุล</span>
+                    <strong id="resName">-</strong>
+                </div>
+                <div class="a4-item">
+                    <span>เบอร์โทรศัพท์</span>
+                    <strong id="resPhone">-</strong>
+                </div>
+            </div>
+
+            <div class="a4-section-title">รายละเอียดการเดินทาง</div>
+            <div class="a4-grid">
+                <div class="a4-item">
+                    <span>สถานีต้นทาง ➔ ปลายทาง</span>
+                    <strong id="resRoute">-</strong>
+                </div>
+                <div class="a4-item">
+                    <span>วันและเวลาเดินทาง</span>
+                    <strong id="resDateTime">-</strong>
+                </div>
+                <div class="a4-item">
+                    <span>เลขที่นั่งโดยสาร</span>
+                    <strong id="resSeat" style="color: #2563eb;">-</strong>
+                </div>
+                <div class="a4-item">
+                    <span>สถานะตั๋ว</span>
+                    <strong style="color: #ea580c;">รอชำระเงิน (Pending)</strong>
+                </div>
+            </div>
+
+            <div class="a4-footer">
+                <span>ราคารวมทั้งสิ้น (Net Total)</span>
+                <span class="price" id="resPrice">0 บาท</span>
+            </div>
+
+            <button class="btn-pay" onclick="showPaymentSlip()">💳 ไปยังช่องทางชำระเงิน (เคาน์เตอร์เซอร์วิส)</button>
+        </div>
+
+        <!-- ปุ่มดาวน์โหลดตั๋ว PDF / ส่งเมล -->
+        <div id="ticketActions" class="ticket-actions" style="display: none;">
+            <button class="btn-action btn-pdf" onclick="downloadTicketPDF()">📄 ดาวน์โหลดตั๋ว PDF (A4)</button>
+            <button class="btn-action btn-email" onclick="sendEmail()">✉️ ส่งตั๋วทางอีเมล</button>
+        </div>
+
+        <!-- 2. หน้าใบแจ้งชำระเงิน เคาน์เตอร์เซอร์วิส (A4 - ไม่มีรายละเอียดตั๋ว มีราคาและบาร์โค้ด) -->
+        <div id="paymentA4">
+            <div class="pay-header">
+                <h2>BILL PAYMENT / เคาน์เตอร์เซอร์วิส</h2>
+                <p>ใบแจ้งชำระเงินค่าบริการรถทัวร์ (กรุณานำเอกสารนี้ไปชำระที่เคาน์เตอร์)</p>
+            </div>
+
+            <div class="pay-box">
+                <span>จำนวนเงินที่ต้องชำระทั้งสิ้น</span>
+                <strong id="payPrice">0 บาท</strong>
+            </div>
+
+            <div class="barcode-section">
+                <div class="barcode-lines">||| | |||| ||| |||||</div>
+                <div class="barcode-number" id="barcodeNum">REF. 0000 0000 0000 00</div>
+            </div>
+
+            <button class="btn-action btn-pdf" style="width: 100%; margin-top: 20px; padding: 12px; background-color: #ea580c;" onclick="downloadPaymentPDF()">📄 ดาวน์โหลดใบชำระเงิน PDF (A4)</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ชุดข้อมูล 77 จังหวัดในประเทศไทย
+    const provinces = [
+        "กระบี่", "กรุงเทพมหานคร", "กาญจนบุรี", "กาฬสินธุ์", "กำแพงเพชร", 
+        "ขอนแก่น", "จันทบุรี", "ฉะเชิงเทรา", "ชลบุรี", "ชัยนาท", 
+        "ชัยภูมิ", "ชุมพร", "ตรัง", "ตราด", "ตาก", 
+        "นครนายก", "นครปฐม", "นครพนม", "นครราชสีมา", "นครศรีธรรมราช", 
+        "นครสวรรค์", "นนทบุรี", "นราธิวาส", "น่าน", "บึงกาฬ", 
+        "บุรีรัมย์", "ปทุมธานี", "ประจวบคีรีขันธ์", "ปราจีนบุรี", "ปัตตานี", 
+        "พระนครศรีอยุธยา", "พะเยา", "พังงา", "พัทลุง", "พิจิตร", 
+        "พิษณุโลก", "เพชรบุรี", "เพชรบูรณ์", "แพร่", "ภูเก็ต", 
+        "มหาสารคาม", "มุกดาหาร", "แม่ฮ่องสอน", "ยโสธร", "ยะลา", 
+        "ร้อยเอ็ด", "ระนอง", "ระยอง", "ราชบุรี", "ลพบุรี", 
+        "ลำปาง", "ลำพูน", "เลย", "ศรีสะเกษ", "สกลนคร", 
+        "สงขลา", "สตูล", "สมุทรปราการ", "สมุทรสงคราม", "สมุทรสาคร", 
+        "สระแก้ว", "สระบุรี", "สิงห์บุรี", "สุโขทัย", "สุพรรณบุรี", 
+        "สุราษฎร์ธานี", "สุรินทร์", "หนองคาย", "หนองบัวลำภู", "อ่างทอง", 
+        "อำนาจเจริญ", "อุดรธานี", "อุตรดิตถ์", "อุทัยธานี", "อุบลราชธานี"
+    ];
+
+    const originSelect = document.getElementById('origin');
+    const destSelect = document.getElementById('destination');
+
+    provinces.forEach(prov => {
+        if (prov !== "พิษณุโลก") {
+            let opt1 = document.createElement('option');
+            opt1.value = prov;
+            opt1.textContent = prov;
+            originSelect.appendChild(opt1);
+        }
+        if (prov !== "ระยอง") {
+            let opt2 = document.createElement('option');
+            opt2.value = prov;
+            opt2.textContent = prov;
+            destSelect.appendChild(opt2);
+        }
+    });
+
+    let bookingData = {};
+
+    document.getElementById('bookingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const origin = document.getElementById('origin').value;
+        const destination = document.getElementById('destination').value;
+
+        if (origin === destination) {
+            alert('สถานีต้นทางและปลายทางต้องไม่เหมือนกัน กรุณาตรวจสอบอีกครั้ง');
+            return;
+        }
+
+        bookingData = {
+            email: document.getElementById('email').value,
+            name: document.getElementById('fullname').value,
+            phone: document.getElementById('phone').value,
+            origin: origin,
+            destination: destination,
+            date: document.getElementById('travelDate').value,
+            time: document.getElementById('travelTime').value,
+            seat: document.getElementById('seatNumber').value,
+            price: Number(document.getElementById('price').value).toLocaleString(),
+            rawPrice: document.getElementById('price').value
+        };
+
+        // แสดงผลข้อมูลลงในตั๋วรูปแบบ A4
+        document.getElementById('resName').innerText = bookingData.name;
+        document.getElementById('resPhone').innerText = bookingData.phone;
+        document.getElementById('resRoute').innerText = `${bookingData.origin} ➔ ${bookingData.destination}`;
+        document.getElementById('resDateTime').innerText = `${bookingData.date} (${bookingData.time})`;
+        document.getElementById('resSeat').innerText = bookingData.seat;
+        document.getElementById('resPrice').innerText = `${bookingData.price} บาท`;
+
+        // ซ่อนหน้าใบชำระเงิน (ถ้าเปิดค้างไว้) และแสดงหน้าตั๋ว
+        document.getElementById('paymentA4').style.display = 'none';
+        document.getElementById('placeholderText').style.display = 'none';
+        document.getElementById('ticketA4').style.display = 'block';
+        document.getElementById('ticketActions').style.display = 'flex';
+    });
+
+    // ฟังก์ชันกดเพื่อเปลี่ยนไปหน้าชำระเงิน (เคาน์เตอร์เซอร์วิส)
+    function showPaymentSlip() {
+        document.getElementById('ticketA4').style.display = 'none';
+        document.getElementById('ticketActions').style.display = 'none';
+
+        // ส่งราคาและสุ่มรหัสบาร์โค้ด
+        document.getElementById('payPrice').innerText = `${bookingData.price} บาท`;
+        const randomRef = Math.floor(1000 + Math.random() * 9000) + " " + Math.floor(1000 + Math.random() * 9000) + " " + Math.floor(1000 + Math.random() * 9000);
+        document.getElementById('barcodeNum').innerText = `REF. ${randomRef}`;
+
+        document.getElementById('paymentA4').style.display = 'block';
+    }
+
+    // ฟังก์ชันดาวน์โหลดตั๋ว PDF
+    function downloadTicketPDF() {
+        const element = document.getElementById('ticketA4');
+        const opt = {
+            margin:       10,
+            filename:     `Bus-Ticket-${bookingData.seat}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2, useCORS: true },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+        html2pdf().from(element).set(opt).save();
+    }
+
+    // ฟังก์ชันดาวน์โหลดใบชำระเงิน PDF (ไม่มีรายละเอียดตั๋ว)
+    function downloadPaymentPDF() {
+        cons
