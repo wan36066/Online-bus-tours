@@ -1,11 +1,10 @@
-# Online-bus-tours
 <!DOCTYPE html>
 <html lang="th">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard จองตั๋วรถทัวร์ออนไลน์</title>
-    <!-- Google Font (Prompt) -->
+    <title>Dashboard จำลองการจองตั๋วรถทัวร์</title>
+    <!-- Google Font: Prompt -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <!-- html2canvas สำหรับแปลงตั๋วเป็นรูปภาพดาวน์โหลด -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -17,8 +16,8 @@
             padding: 0;
         }
         body {
-            background-color: #f4f6f9;
-            color: #333;
+            background-color: #f1f5f9;
+            color: #1e293b;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -28,26 +27,29 @@
         .dashboard-container {
             display: flex;
             width: 100%;
-            max-width: 1100px;
+            max-width: 1150px;
             background: #fff;
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
             overflow: hidden;
         }
+        /* ฝั่งฟอร์มกรอกข้อมูล */
         .form-section {
             flex: 1.2;
-            padding: 40px;
+            padding: 35px;
             background: #ffffff;
             max-height: 90vh;
             overflow-y: auto;
         }
         .form-section h2 {
-            color: #1e293b;
+            color: #0f172a;
             margin-bottom: 20px;
-            font-size: 24px;
+            font-size: 22px;
             display: flex;
             align-items: center;
             gap: 10px;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 12px;
         }
         .form-row {
             display: flex;
@@ -61,7 +63,7 @@
             display: block;
             margin-bottom: 6px;
             font-weight: 500;
-            color: #64748b;
+            color: #475569;
             font-size: 14px;
         }
         input, select {
@@ -75,14 +77,14 @@
             background-color: #fff;
         }
         input:focus, select:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
         .btn-book {
             width: 100%;
-            background-color: #3b82f6;
+            background-color: #2563eb;
             color: white;
-            padding: 12px;
+            padding: 13px;
             border: none;
             border-radius: 8px;
             font-size: 16px;
@@ -92,14 +94,14 @@
             transition: background-color 0.3s;
         }
         .btn-book:hover {
-            background-color: #2563eb;
+            background-color: #1d4ed8;
         }
 
-        /* Preview / Ticket Section */
+        /* ฝั่งแสดงผลตั๋ว/สลิป (Dashboard Preview) */
         .preview-section {
             flex: 1;
             background: #f8fafc;
-            padding: 40px;
+            padding: 35px;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -109,36 +111,38 @@
         .placeholder-text {
             color: #94a3b8;
             text-align: center;
-            font-size: 16px;
+            font-size: 15px;
+            line-height: 1.6;
         }
 
-        /* Ticket / A4 Slip Design */
+        /* ดีไซน์ใบตั๋ว / สลิป */
         #ticketSlip {
             display: none;
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
             background: #ffffff;
             border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             overflow: hidden;
-            border: 1px solid #e2e8f0;
+            border: 1px solid #cbd5e1;
         }
         .ticket-header {
-            background: #1e293b;
+            background: #0f172a;
             color: white;
             padding: 20px;
             text-align: center;
         }
         .ticket-header h3 {
-            font-size: 20px;
-            margin-bottom: 4px;
+            font-size: 18px;
+            letter-spacing: 0.5px;
+            margin-bottom: 2px;
         }
         .ticket-header p {
-            font-size: 12px;
+            font-size: 11px;
             color: #94a3b8;
         }
         .ticket-body {
-            padding: 24px;
+            padding: 20px;
         }
         .ticket-row {
             display: flex;
@@ -156,11 +160,11 @@
         }
         .ticket-divider {
             border-top: 1px dashed #cbd5e1;
-            margin: 16px 0;
+            margin: 14px 0;
         }
         .ticket-footer {
             background: #f1f5f9;
-            padding: 15px 24px;
+            padding: 14px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -169,13 +173,13 @@
             color: #0f172a;
         }
         
-        /* Action Buttons inside Ticket */
+        /* ปุ่มจัดการตั๋ว (บันทึก / ส่งเมล) */
         .ticket-actions {
             display: flex;
             gap: 10px;
             margin-top: 20px;
             width: 100%;
-            max-width: 420px;
+            max-width: 400px;
         }
         .btn-action {
             flex: 1;
@@ -188,13 +192,13 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 5px;
+            gap: 6px;
             color: white;
             transition: opacity 0.2s;
         }
         .btn-action:hover { opacity: 0.9; }
-        .btn-download { background-color: #10b981; }
-        .btn-email { background-color: #8b5cf6; }
+        .btn-download { background-color: #059669; }
+        .btn-email { background-color: #7c3aed; }
 
         @media (max-width: 768px) {
             .dashboard-container {
@@ -212,17 +216,17 @@
 <div class="dashboard-container">
     <!-- ฟอร์มกรอกข้อมูล (ฝั่งซ้าย) -->
     <div class="form-section">
-        <h2>🚌 Dashboard จองตั๋วรถทัวร์</h2>
+        <h2>🚌 Dashboard จำลองจองตั๋วรถทัวร์</h2>
         <form id="bookingForm">
             <div class="form-group">
-                <label>อีเมลผู้จอง (สำหรับรับข้อมูลตั๋ว)</label>
+                <label>อีเมลผู้จอง (สำหรับรับ/ส่งข้อมูลตั๋ว)</label>
                 <input type="email" id="email" placeholder="example@email.com" required>
             </div>
 
             <div class="form-row">
                 <div class="form-group">
                     <label>1. ชื่อ - นามสกุล</label>
-                    <input type="text" id="fullname" placeholder="ชื่อจริง นามสกุล" required>
+                    <input type="text" id="fullname" placeholder="กรอกชื่อและนามสกุล" required>
                 </div>
                 <div class="form-group">
                     <label>2. เบอร์โทรศัพท์</label>
@@ -235,7 +239,7 @@
                     <label>5. สถานีต้นทาง</label>
                     <select id="origin" required>
                         <option value="">-- เลือกจังหวัดต้นทาง --</option>
-                        <option value="พิษณุโลก" style="font-weight:bold; color:#1d4ed8;">📍 พิษณุโลก (แนะนำ)</option>
+                        <option value="พิษณุโลก" style="font-weight:bold; color:#2563eb;">📍 พิษณุโลก (แนะนำ)</option>
                         <option disabled>-----------------------------</option>
                     </select>
                 </div>
@@ -243,7 +247,7 @@
                     <label>5. สถานีปลายทาง</label>
                     <select id="destination" required>
                         <option value="">-- เลือกจังหวัดปลายทาง --</option>
-                        <option value="ระยอง" style="font-weight:bold; color:#1d4ed8;">📍 ระยอง (แนะนำ)</option>
+                        <option value="ระยอง" style="font-weight:bold; color:#2563eb;">📍 ระยอง (แนะนำ)</option>
                         <option disabled>-----------------------------</option>
                     </select>
                 </div>
@@ -257,7 +261,7 @@
                 <div class="form-group">
                     <label>6. เวลาเดินทาง</label>
                     <select id="travelTime" required>
-                        <option value="">-- เลือกเวลา --</option>
+                        <option value="">-- เลือกเวลาเดินทาง --</option>
                         <option value="06:00 น.">06:00 น.</option>
                         <option value="09:30 น.">09:30 น.</option>
                         <option value="13:00 น.">13:00 น.</option>
@@ -278,21 +282,21 @@
                 </div>
             </div>
 
-            <button type="submit" class="btn-book">7. ยืนยันและออกตั๋วโดยสาร</button>
+            <button type="submit" class="btn-book">ยืนยันจำลองการจองตั๋ว</button>
         </form>
     </div>
 
     <!-- ส่วนแสดงผลตั๋ว/สลิป (ฝั่งขวา) -->
     <div class="preview-section">
         <div id="placeholderText" class="placeholder-text">
-            📋 กรอกข้อมูลการจองด้านซ้าย<br>แล้วกด "ยืนยันและออกตั๋ว" เพื่อดูสลิปตั๋วโดยสาร
+            📋 กรอกข้อมูลทางด้านซ้ายให้ครบถ้วน<br>แล้วกด <b>"ยืนยันจำลองการจองตั๋ว"</b><br>เพื่อแสดงใบเสร็จ/ตั๋วโดยสารจำลอง
         </div>
 
-        <!-- หน้าตาตั๋วที่จะแสดงผลและดาวน์โหลด -->
+        <!-- หน้าตั๋วจำลอง -->
         <div id="ticketSlip">
             <div class="ticket-header">
                 <h3>E-TICKET BUS PASS</h3>
-                <p>ใบยืนยันการจองตั๋วรถทัวร์ออนไลน์</p>
+                <p>ใบยืนยันการจองตั๋วรถทัวร์ออนไลน์ (จำลอง)</p>
             </div>
             <div class="ticket-body">
                 <div class="ticket-row">
@@ -319,11 +323,11 @@
             </div>
             <div class="ticket-footer">
                 <span>ราคารวมทั้งสิ้น</span>
-                <span id="resPrice" style="color: #10b981;">0 บาท</span>
+                <span id="resPrice" style="color: #059669;">0 บาท</span>
             </div>
         </div>
 
-        <!-- ปุ่มดาวน์โหลด / ส่งอีเมล -->
+        <!-- ปุ่มกดบันทึกหรือส่งเมล -->
         <div id="ticketActions" class="ticket-actions" style="display: none;">
             <button class="btn-action btn-download" onclick="downloadTicket()">📥 บันทึกลงมือถือ</button>
             <button class="btn-action btn-email" onclick="sendEmail()">✉️ ส่งไปทางอีเมล</button>
@@ -332,7 +336,7 @@
 </div>
 
 <script>
-    // รายชื่อ 77 จังหวัดในประเทศไทย
+    // ชุดข้อมูล 77 จังหวัดในประเทศไทย
     const provinces = [
         "กระบี่", "กรุงเทพมหานคร", "กาญจนบุรี", "กาฬสินธุ์", "กำแพงเพชร", 
         "ขอนแก่น", "จันทบุรี", "ฉะเชิงเทรา", "ชลบุรี", "ชัยนาท", 
@@ -354,6 +358,7 @@
     const originSelect = document.getElementById('origin');
     const destSelect = document.getElementById('destination');
 
+    // เติมรายชื่อจังหวัดทั้งหมดลงใน Dropdown (แยกกรณีพิษณุโลก/ระยองที่ขึ้นไว้ด้านบนแล้ว)
     provinces.forEach(prov => {
         if (prov !== "พิษณุโลก") {
             let opt1 = document.createElement('option');
@@ -371,6 +376,7 @@
 
     let bookingData = {};
 
+    // ฟังก์ชันเมื่อกดปุ่มจอง
     document.getElementById('bookingForm').addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -378,10 +384,11 @@
         const destination = document.getElementById('destination').value;
 
         if (origin === destination) {
-            alert('สถานีต้นทางและปลายทางต้องไม่ซ้ำกัน กรุณาเลือกใหม่อีกครั้ง');
+            alert('สถานีต้นทางและปลายทางต้องไม่เหมือนกัน กรุณาตรวจสอบอีกครั้ง');
             return;
         }
 
+        // ดึงข้อมูลจัดเก็บ
         bookingData = {
             email: document.getElementById('email').value,
             name: document.getElementById('fullname').value,
@@ -394,7 +401,7 @@
             price: Number(document.getElementById('price').value).toLocaleString()
         };
 
-        // แสดงผลลงในตั๋ว
+        // นำค่าไปแสดงลงบนตั๋วจำลอง
         document.getElementById('resName').innerText = bookingData.name;
         document.getElementById('resPhone').innerText = bookingData.phone;
         document.getElementById('resRoute').innerText = `${bookingData.origin} ➔ ${bookingData.destination}`;
@@ -408,6 +415,7 @@
         document.getElementById('ticketActions').style.display = 'flex';
     });
 
+    // ฟังก์ชันบันทึกตั๋วเป็นรูปภาพลงเครื่อง/มือถือ
     function downloadTicket() {
         const ticketElement = document.getElementById('ticketSlip');
         html2canvas(ticketElement, { scale: 2 }).then(canvas => {
@@ -418,8 +426,9 @@
         });
     }
 
+    // ฟังก์ชันส่งอีเมล (เปิดโปรแกรมอีเมลพร้อมร่างข้อมูลสำเร็จรูป)
     function sendEmail() {
-        const subject = encodeURIComponent(`ยืนยันการจองตั๋วรถทัวร์ เส้นทาง ${bookingData.origin} - ${bookingData.destination}`);
+        const subject = encodeURIComponent(`ใบยืนยันการจองตั๋วรถทัวร์ เส้นทาง ${bookingData.origin} - ${bookingData.destination}`);
         const body = encodeURIComponent(
             `เรียน คุณ ${bookingData.name},\n\nข้อมูลการจองตั๋วรถทัวร์ของคุณ:\n` +
             `- เส้นทาง: ${bookingData.origin} ไปยัง ${bookingData.destination}\n` +
